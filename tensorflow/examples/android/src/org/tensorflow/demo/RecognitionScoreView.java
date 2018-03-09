@@ -19,16 +19,18 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
 import org.tensorflow.demo.Classifier.Recognition;
+import org.tensorflow.demo.entities.AttributeMapping;
 
 import java.util.List;
 
 public class RecognitionScoreView extends View implements ResultsView {
-    private static final float TEXT_SIZE_DIP = 16;
+    private static final float TEXT_SIZE_DIP = 12;
     private final float textSizePx;
     private final Paint fgPaint;
     private final Paint bgPaint;
@@ -41,6 +43,7 @@ public class RecognitionScoreView extends View implements ResultsView {
                 TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
         fgPaint = new Paint();
+        fgPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
         fgPaint.setTextSize(textSizePx);
 
         bgPaint = new Paint();
@@ -62,7 +65,10 @@ public class RecognitionScoreView extends View implements ResultsView {
 
         if (results != null) {
             for (final Recognition recog : results) {
-                canvas.drawText(recog.getTitle() + ": " + recog.getConfidence(), x, y, fgPaint);
+                canvas.drawText(AttributeMapping.valueOf(recog.getTitle().toUpperCase()).getValue() + ": "
+                                + (int) (recog.getConfidence() * 100) + "%"
+                        , x, y,
+                        fgPaint);
                 y += fgPaint.getTextSize() * 1.5f;
             }
         }
