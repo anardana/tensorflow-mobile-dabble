@@ -25,7 +25,6 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.tensorflow.demo.Classifier.Recognition;
-import org.tensorflow.demo.entities.AttributeMapping;
 
 import java.util.List;
 
@@ -65,8 +64,7 @@ public class RecognitionScoreView extends View implements ResultsView {
 
         if (results != null) {
             for (final Recognition recog : results) {
-                canvas.drawText(AttributeMapping.valueOf(recog.getTitle().toUpperCase()).getValue() + ": "
-                                + (int) (recog.getConfidence() * 100) + "%"
+                canvas.drawText(recog.getTitle().toUpperCase() + ": " + (int) (recog.getConfidence() * 100) + "%"
                         , x, y,
                         fgPaint);
                 y += fgPaint.getTextSize() * 1.5f;

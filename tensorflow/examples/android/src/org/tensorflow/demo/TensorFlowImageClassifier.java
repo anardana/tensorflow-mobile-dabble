@@ -22,6 +22,7 @@ import android.util.Log;
 
 import org.tensorflow.Operation;
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
+import org.tensorflow.demo.entities.RecognitionWithScore;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,7 +37,7 @@ import java.util.Vector;
  * A classifier specialized to label images using TensorFlow.
  */
 public class TensorFlowImageClassifier implements Classifier {
-    public static final float RESULT_THRESHOLD = 0.4f;
+    public static final float RESULT_THRESHOLD = 0.0f;
     private static final String TAG = "TensorFlowImageClassifier";
     // Only return this many results with at least this confidence.
     private static final int MAX_RESULTS = 5;
@@ -76,7 +77,7 @@ public class TensorFlowImageClassifier implements Classifier {
      * @param outputName    The label of the output node.
      * @throws IOException
      */
-    public static Classifier create(
+    public static TensorFlowImageClassifier create(
             AssetManager assetManager,
             String modelFilename,
             String labelFilename,
@@ -120,7 +121,7 @@ public class TensorFlowImageClassifier implements Classifier {
         c.imageStd = imageStd;
 
         // Pre-allocate buffers.
-        c.outputNames = new String[]{outputName};
+        c.outputNames = new String[]{outputName, "pool_3:0"};
         c.intValues = new int[inputSize * inputSize];
         c.floatValues = new float[inputSize * inputSize * 3];
         c.outputs = new float[numClasses];
@@ -128,8 +129,7 @@ public class TensorFlowImageClassifier implements Classifier {
         return c;
     }
 
-    @Override
-    public List<Recognition> recognizeImage(final Bitmap bitmap) {
+    public RecognitionWithScore recognizeWithOp(final Bitmap bitmap) {
         // Log this method so that it can be analyzed with systrace.
         Trace.beginSection("recognizeImage");
 
@@ -160,6 +160,9 @@ public class TensorFlowImageClassifier implements Classifier {
         inferenceInterface.fetch(outputName, outputs);
         Trace.endSection();
 
+        float[] op = new float[2048];
+        inferenceInterface.fetch("pool_3:0", op);
+
         // Find the best classifications.
         PriorityQueue<Recognition> pq =
                 new PriorityQueue<Recognition>(
@@ -186,7 +189,12 @@ public class TensorFlowImageClassifier implements Classifier {
                 recognitions.add(poll);
         }
         Trace.endSection(); // "recognizeImage"
-        return recognitions;
+        return new RecognitionWithScore(recognitions, op);
+    }
+
+    @Override
+    public List<Recognition> recognizeImage(final Bitmap bitmap) {
+        return recognizeWithOp(bitmap).getRecognitions();
     }
 
     @Override

@@ -4,16 +4,15 @@ package org.tensorflow.demo.entities;
  * Created by Ankit Srivastava on 09/03/18.
  */
 
-public enum AttributeMapping {
-    CHECKS("Checks"),
-    FULL_SLEEVES("Full Sleeve"),
-    HALF_SLEEVES("Half Sleeve"),
-    MANDARIN("Mandarin"),
-    PLAIN("Plain");
+public enum ClothCategory {
+    LongGown("Long Gown"),
+    menShirt("Men's Shirt"),
+    polotshirt("Polo T-Shirt"),
+    vestWaistCoat("Vest Waist Coat");
 
     private final String value;
 
-    AttributeMapping(String value) {
+    ClothCategory(String value) {
         this.value = value;
     }
 

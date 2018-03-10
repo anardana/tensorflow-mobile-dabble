@@ -5,43 +5,25 @@ package org.tensorflow.demo.entities;
  */
 
 public final class ObjectWithScore {
-    private final String name;
-    private final double checks;
-    private final double fullSleeves;
-    private final double halfSleeves;
-    private final double plain;
-    private final double mandarin;
+    private final String fileName;
+    private final double[] attributes;
+    private final ClothCategory category;
 
-    public ObjectWithScore(String name, double checks, double fullSleeves, double halfSleeves, double plain, double mandarin) {
-        this.name = name;
-        this.checks = checks;
-        this.fullSleeves = fullSleeves;
-        this.halfSleeves = halfSleeves;
-        this.plain = plain;
-        this.mandarin = mandarin;
+    public ObjectWithScore(String fileName, double[] attributes, ClothCategory category) {
+        this.fileName = fileName;
+        this.attributes = attributes;
+        this.category = category;
     }
 
-    public String getName() {
-        return name;
+    public String getFileName() {
+        return fileName;
     }
 
-    public double getChecks() {
-        return checks;
+    public double[] getAttributes() {
+        return attributes;
     }
 
-    public double getFullSleeves() {
-        return fullSleeves;
-    }
-
-    public double getHalfSleeves() {
-        return halfSleeves;
-    }
-
-    public double getPlain() {
-        return plain;
-    }
-
-    public double getMaindarin() {
-        return mandarin;
+    public ClothCategory getCategory() {
+        return category;
     }
 }

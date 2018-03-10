@@ -44,6 +44,7 @@ import android.widget.Toast;
 import org.tensorflow.demo.env.ImageUtils;
 import org.tensorflow.demo.env.Logger;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 
 public abstract class CameraActivity extends Activity
@@ -80,6 +81,12 @@ public abstract class CameraActivity extends Activity
             setFragment();
         } else {
             requestPermission();
+        }
+        try {
+            Constants.ObjectWithScore = new DataLoader(this).getObjectWithScore();
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOGGER.e("Ankit","Data Load failed");
         }
     }
 
