@@ -83,10 +83,12 @@ public abstract class CameraActivity extends Activity
             requestPermission();
         }
         try {
-            Constants.ObjectWithScore = new DataLoader(this).getObjectWithScore();
+            DataLoader dataLoader = new DataLoader(this);
+            Constants.objectWithScores = dataLoader.getObjectWithScore();
+            Constants.objectDataFromRetailMe = dataLoader.getObjectDataFromRetailMe();
         } catch (IOException e) {
             e.printStackTrace();
-            LOGGER.e("Ankit","Data Load failed");
+            LOGGER.e("Ankit", "Data Load failed");
         }
     }
 

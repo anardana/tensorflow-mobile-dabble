@@ -25,8 +25,10 @@ import android.util.TypedValue;
 import android.view.View;
 
 import org.tensorflow.demo.Classifier.Recognition;
+import org.tensorflow.demo.entities.ObjectWithDetection;
 
 import java.util.List;
+import java.util.Map;
 
 public class RecognitionScoreView extends View implements ResultsView {
     private static final float TEXT_SIZE_DIP = 12;
@@ -34,6 +36,8 @@ public class RecognitionScoreView extends View implements ResultsView {
     private final Paint fgPaint;
     private final Paint bgPaint;
     private List<Recognition> results;
+    private ObjectWithDetection image;
+
 
     public RecognitionScoreView(final Context context, final AttributeSet set) {
         super(context, set);
@@ -50,9 +54,9 @@ public class RecognitionScoreView extends View implements ResultsView {
     }
 
     @Override
-    public void setResults(final List<Recognition> results) {
+    public void setResults(List<Recognition> results, ObjectWithDetection image) {
         this.results = results;
-        postInvalidate();
+        this.image = image;
     }
 
     @Override
@@ -62,11 +66,21 @@ public class RecognitionScoreView extends View implements ResultsView {
 
         canvas.drawPaint(bgPaint);
 
+        if (image != null) {
+            String fileName = image.getOws().getFileName();
+            String key = fileName.substring(0, fileName.indexOf(".jpg"));
+            Map<String, String> data = Constants.objectDataFromRetailMe.get(key);
+            for (String left : data.keySet()) {
+                canvas.drawText(left.toUpperCase() + ": " + data.get(left), x, y + 100, fgPaint);
+                y += fgPaint.getTextSize() * 1.5f;
+            }
+        }
+
+        y += 50;
+
         if (results != null) {
             for (final Recognition recog : results) {
-                canvas.drawText(recog.getTitle().toUpperCase() + ": " + (int) (recog.getConfidence() * 100) + "%"
-                        , x, y,
-                        fgPaint);
+                canvas.drawText(recog.getTitle().toUpperCase() + ": " + (int) (recog.getConfidence() * 100) + "%", x, y + 100, fgPaint);
                 y += fgPaint.getTextSize() * 1.5f;
             }
         }

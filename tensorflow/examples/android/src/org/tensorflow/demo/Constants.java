@@ -2,6 +2,7 @@ package org.tensorflow.demo;
 
 import org.tensorflow.demo.entities.ObjectWithScore;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -9,5 +10,6 @@ import java.util.Set;
  */
 
 public class Constants {
-    public static Set<ObjectWithScore> ObjectWithScore;
+    public static Set<ObjectWithScore> objectWithScores;
+    public static Map<String, Map<String, String>> objectDataFromRetailMe;
 }

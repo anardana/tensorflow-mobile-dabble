@@ -70,7 +70,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private static final boolean MAINTAIN_ASPECT = true;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920, 1080);
     private static final float TEXT_SIZE_DIP = 10;
-    private ResultsView resultsView;
+    private RecognitionScoreView recognitionScoreView;
     private Bitmap rgbFrameBitmap = null;
     private Bitmap croppedBitmap = null;
     private Bitmap cropCopyBitmap = null;
@@ -80,6 +80,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
     private BorderedText borderedText;
+    private float MODEL_CONFIDENCE_THRESHOLD = .8f;
 
     private double[] toDoubleArray(float[] arr) {
         if (arr == null) return null;
@@ -163,20 +164,22 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                         final long startTime = SystemClock.uptimeMillis();
 
                         final RecognitionWithScore result = classifier.recognizeWithOp(croppedBitmap);
+                        if (result.getRecognitions().get(0).getConfidence() > MODEL_CONFIDENCE_THRESHOLD) {
 
-                        ObjectWithDetection imageName = calculateClosestImage(result.getOp(),
-                                result.getRecognitions().get(0));
+                            ObjectWithDetection imageName = calculateClosestImage(result.getOp(), result.getRecognitions().get(0));
 
-                        lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-                        LOGGER.i("Detect: %s", result.getRecognitions());
-                        LOGGER.i("Image found: %s \t %s \t %s", imageName.getOws().getFileName(), imageName.getOws().getCategory(), imageName.getEuclidianDistance());
-                        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-                        if (resultsView == null) {
-                            resultsView = (ResultsView) findViewById(R.id.results);
+                            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+                            LOGGER.i("Detect: %s", result.getRecognitions());
+                            LOGGER.i("Image found: %s \t %s \t %s", imageName.getOws().getFileName(), imageName.getOws().getCategory(), imageName.getEuclidianDistance());
+                            cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
+                            if (recognitionScoreView == null) {
+                                recognitionScoreView = (RecognitionScoreView) findViewById(R.id.results);
+                            }
+                            recognitionScoreView.setResults(result.getRecognitions(), imageName);
+                            recognitionScoreView.postInvalidate();
+                            requestRender();
+                            readyForNextImage();
                         }
-                        resultsView.setResults(result.getRecognitions());
-                        requestRender();
-                        readyForNextImage();
                     }
                 });
     }
@@ -187,13 +190,14 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 //        Collections.reverse(Arrays.asList(op));
         double[] op1 = toDoubleArray(op);
         double distance = Double.MAX_VALUE;
-        Set<ObjectWithScore> images = Constants.ObjectWithScore;
+        Set<ObjectWithScore> images = Constants.objectWithScores;
         EuclideanDistance ed = new EuclideanDistance();
         for (ObjectWithScore image : images) {
             if (image.getCategory().toString().toLowerCase().equals(recognition.getTitle().toLowerCase())) {
                 double d = ed.compute(image.getAttributes(), op1);
                 if (d < distance) {
                     response = new ObjectWithDetection(image, d);
+                    distance = d;
                 }
             }
         }

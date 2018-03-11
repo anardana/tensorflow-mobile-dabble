@@ -8,7 +8,10 @@ import org.tensorflow.demo.entities.ObjectWithScore;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,11 +20,33 @@ import java.util.Set;
 
 public final class DataLoader {
     private final Set<ObjectWithScore> objectWithScore;
+    private final Map<String, Map<String, String>> objectDataFromRetailMe;
     private Context context;
-
     public DataLoader(Context context) throws IOException {
         this.context = context;
         this.objectWithScore = populateObjectsWithScore();
+        this.objectDataFromRetailMe = populateObjectDataFromCsv();
+    }
+
+    public Map<String, Map<String, String>> getObjectDataFromRetailMe() {
+        return objectDataFromRetailMe;
+    }
+
+    private Map<String, Map<String, String>> populateObjectDataFromCsv() {
+        Map<String, Map<String, String>> o = new HashMap<>();
+
+        String[] fileLines = readFromFile("object.csv").split("[\\r\\n]+");
+        String[] headers = fileLines[0].split(",");
+
+        for (int i = 1; i < fileLines.length; i++) {
+            String[] tokens = fileLines[i].split(",");
+            Map<String, String> tuples = new LinkedHashMap<>();
+            for (int j = 0; j < tokens.length; j++) {
+                tuples.put(headers[j], tokens[j]);
+            }
+            o.put(tokens[0], tuples);
+        }
+        return o;
     }
 
     private String readFromFile(String myFile) {
@@ -30,13 +55,14 @@ public final class DataLoader {
             BufferedReader myReader = new BufferedReader(new InputStreamReader(context.getAssets().open(myFile)));
             String aDataRow = "";
             while ((aDataRow = myReader.readLine()) != null) {
-                aBuffer.append(aDataRow);
+                aBuffer.append(aDataRow).append("\n");
             }
             myReader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return aBuffer.toString();
+        String s = aBuffer.toString();
+        return s.substring(0, s.length() - 1);
     }
 
     private Set<ObjectWithScore> populateObjectsWithScore() throws IOException {
