@@ -164,12 +164,12 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                         final long startTime = SystemClock.uptimeMillis();
 
                         final RecognitionWithScore result = classifier.recognizeWithOp(croppedBitmap);
+                        LOGGER.i("Detect: %s", result.getRecognitions());
                         if (result.getRecognitions().get(0).getConfidence() > MODEL_CONFIDENCE_THRESHOLD) {
 
                             ObjectWithDetection imageName = calculateClosestImage(result.getOp(), result.getRecognitions().get(0));
 
                             lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
-                            LOGGER.i("Detect: %s", result.getRecognitions());
                             LOGGER.i("Image found: %s \t %s \t %s", imageName.getOws().getFileName(), imageName.getOws().getCategory(), imageName.getEuclidianDistance());
                             cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
                             if (recognitionScoreView == null) {
