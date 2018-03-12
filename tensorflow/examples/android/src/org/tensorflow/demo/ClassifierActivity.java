@@ -70,6 +70,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private static final boolean MAINTAIN_ASPECT = true;
     private static final Size DESIRED_PREVIEW_SIZE = new Size(1920, 1080);
     private static final float TEXT_SIZE_DIP = 10;
+    private static final float MODEL_EUCLIDIAN_DISTANCE_THRESHOLD = 20f;
+    private static float MODEL_RECOGNITION_CONFIDENCE_THRESHOLD = .7f;
     private RecognitionScoreView recognitionScoreView;
     private Bitmap rgbFrameBitmap = null;
     private Bitmap croppedBitmap = null;
@@ -80,7 +82,6 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
     private BorderedText borderedText;
-    private float MODEL_CONFIDENCE_THRESHOLD = .8f;
 
     private double[] toDoubleArray(float[] arr) {
         if (arr == null) return null;
@@ -165,21 +166,25 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
 
                         final RecognitionWithScore result = classifier.recognizeWithOp(croppedBitmap);
                         LOGGER.i("Detect: %s", result.getRecognitions());
-                        if (result.getRecognitions().get(0).getConfidence() > MODEL_CONFIDENCE_THRESHOLD) {
+                        cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
+                        if (recognitionScoreView == null) {
+                            recognitionScoreView = (RecognitionScoreView) findViewById(R.id.results);
+                        }
+                        if (result.getRecognitions().get(0).getConfidence() > MODEL_RECOGNITION_CONFIDENCE_THRESHOLD) {
 
                             ObjectWithDetection imageName = calculateClosestImage(result.getOp(), result.getRecognitions().get(0));
-
-                            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
                             LOGGER.i("Image found: %s \t %s \t %s", imageName.getOws().getFileName(), imageName.getOws().getCategory(), imageName.getEuclidianDistance());
-                            cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-                            if (recognitionScoreView == null) {
-                                recognitionScoreView = (RecognitionScoreView) findViewById(R.id.results);
-                            }
-                            recognitionScoreView.setResults(result.getRecognitions(), imageName);
-                            recognitionScoreView.postInvalidate();
-                            requestRender();
-                            readyForNextImage();
-                        }
+                            if (imageName.getEuclidianDistance() < MODEL_EUCLIDIAN_DISTANCE_THRESHOLD)
+                                recognitionScoreView.setResults(result.getRecognitions(), imageName);
+                            else
+                                recognitionScoreView.setResults(result.getRecognitions(), null);
+
+                        } else
+                            recognitionScoreView.setResults(null, null);
+                        recognitionScoreView.postInvalidate();
+                        requestRender();
+                        readyForNextImage();
+                        lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
                     }
                 });
     }

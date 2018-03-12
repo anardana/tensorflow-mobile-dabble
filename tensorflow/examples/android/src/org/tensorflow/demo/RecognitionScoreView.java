@@ -27,13 +27,16 @@ import android.view.View;
 import org.tensorflow.demo.Classifier.Recognition;
 import org.tensorflow.demo.entities.ObjectWithDetection;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class RecognitionScoreView extends View implements ResultsView {
     private static final float TEXT_SIZE_DIP = 12;
     private final float textSizePx;
     private final Paint fgPaint;
+    private final Paint headerPaint;
     private final Paint bgPaint;
     private List<Recognition> results;
     private ObjectWithDetection image;
@@ -48,6 +51,10 @@ public class RecognitionScoreView extends View implements ResultsView {
         fgPaint = new Paint();
         fgPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
         fgPaint.setTextSize(textSizePx);
+
+        headerPaint = new Paint();
+        headerPaint.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.BOLD));
+        headerPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
 
         bgPaint = new Paint();
         bgPaint.setColor(Color.TRANSPARENT);
@@ -66,17 +73,25 @@ public class RecognitionScoreView extends View implements ResultsView {
 
         canvas.drawPaint(bgPaint);
 
+        Set customPositionedAttributes = new HashSet();
+        customPositionedAttributes.add("description");
+        customPositionedAttributes.add("id");
         if (image != null) {
             String fileName = image.getOws().getFileName();
             String key = fileName.substring(0, fileName.indexOf(".jpg"));
             Map<String, String> data = Constants.objectDataFromRetailMe.get(key);
+
+            canvas.drawText(data.get("description") + " (" + data.get("id") + ")", 10, 70, headerPaint);
+
             for (String left : data.keySet()) {
-                canvas.drawText(left.toUpperCase() + ": " + data.get(left), x, y + 100, fgPaint);
-                y += fgPaint.getTextSize() * 1.5f;
+                if (!customPositionedAttributes.contains(left)) {
+                    canvas.drawText(left.toUpperCase() + ": " + data.get(left), x, y + 100, fgPaint);
+                    y += fgPaint.getTextSize() * 1.5f;
+                }
             }
         }
 
-        y += 50;
+        y = 900;
 
         if (results != null) {
             for (final Recognition recog : results) {
