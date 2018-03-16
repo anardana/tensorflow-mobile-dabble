@@ -173,6 +173,7 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                         if (result.getRecognitions().get(0).getConfidence() > MODEL_RECOGNITION_CONFIDENCE_THRESHOLD) {
 
                             ObjectWithDetection imageName = calculateClosestImage(result.getOp(), result.getRecognitions().get(0));
+                            LOGGER.e(convertArrayToCsv(result.getOp()));
                             LOGGER.i("Image found: %s \t %s \t %s", imageName.getOws().getFileName(), imageName.getOws().getCategory(), imageName.getEuclidianDistance());
                             if (imageName.getEuclidianDistance() < MODEL_EUCLIDIAN_DISTANCE_THRESHOLD)
                                 recognitionScoreView.setResults(result.getRecognitions(), imageName);
@@ -187,6 +188,17 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                         lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
                     }
                 });
+    }
+
+    public String convertArrayToCsv(float[] IncomingArray) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < IncomingArray.length; i++) {
+            sb = sb.append(Float.toString(IncomingArray[i]));
+            if (i != IncomingArray.length - 1) {
+                sb.append(",");
+            }
+        }
+        return sb.toString();
     }
 
     private ObjectWithDetection calculateClosestImage(float[] op, Classifier.Recognition recognition) {

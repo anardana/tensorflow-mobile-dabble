@@ -122,6 +122,8 @@ public class RecognitionScoreView extends View implements ResultsView {
                 canvas.drawText(recog.getTitle().toUpperCase() + ": " + (int) (recog.getConfidence() * 100) + "%", x, y + 100, fgPaint);
                 y += fgPaint.getTextSize() * 1.5f;
             }
+            if (image != null)
+                canvas.drawText("Distance: " + image.getEuclidianDistance(), x, y + 100, fgPaint);
         }
     }
 }
