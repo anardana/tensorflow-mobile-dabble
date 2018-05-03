@@ -16,6 +16,7 @@
 
 package org.tensorflow.demo;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -61,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import org.tensorflow.demo.env.Logger;
 import org.tensorflow.demo.R; // Explicit import needed for internal Google builds.
 
+@SuppressLint("ValidFragment")
 public class CameraConnectionFragment extends Fragment {
   private static final Logger LOGGER = new Logger();
 
@@ -227,6 +229,7 @@ public class CameraConnectionFragment extends Fragment {
 
   private final ConnectionCallback cameraConnectionCallback;
 
+  @SuppressLint("ValidFragment")
   private CameraConnectionFragment(
       final ConnectionCallback connectionCallback,
       final OnImageAvailableListener imageListener,
@@ -384,7 +387,6 @@ public class CameraConnectionFragment extends Fragment {
           chooseOptimalSize(map.getOutputSizes(SurfaceTexture.class),
               inputSize.getWidth(),
               inputSize.getHeight());
-
       // We fit the aspect ratio of TextureView to the size of preview we picked.
       final int orientation = getResources().getConfiguration().orientation;
       if (orientation == Configuration.ORIENTATION_LANDSCAPE) {

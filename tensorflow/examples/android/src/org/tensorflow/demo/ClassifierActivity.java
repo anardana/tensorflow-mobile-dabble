@@ -36,6 +36,7 @@ import org.tensorflow.demo.env.BorderedText;
 import org.tensorflow.demo.env.ImageUtils;
 import org.tensorflow.demo.env.Logger;
 
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 
@@ -163,6 +164,8 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                     @Override
                     public void run() {
                         final long startTime = SystemClock.uptimeMillis();
+                        List<Classifier.Recognition> results = null;
+                        ObjectWithDetection image = null;
 
                         final RecognitionWithScore result = classifier.recognizeWithOp(croppedBitmap);
                         LOGGER.i("Detect: %s", result.getRecognitions());
@@ -175,14 +178,21 @@ public class ClassifierActivity extends CameraActivity implements OnImageAvailab
                             ObjectWithDetection imageName = calculateClosestImage(result.getOp(), result.getRecognitions().get(0));
                             LOGGER.e(convertArrayToCsv(result.getOp()));
                             LOGGER.i("Image found: %s \t %s \t %s", imageName.getOws().getFileName(), imageName.getOws().getCategory(), imageName.getEuclidianDistance());
-                            if (imageName.getEuclidianDistance() < MODEL_EUCLIDIAN_DISTANCE_THRESHOLD)
-                                recognitionScoreView.setResults(result.getRecognitions(), imageName);
-                            else
-                                recognitionScoreView.setResults(result.getRecognitions(), null);
-
-                        } else
-                            recognitionScoreView.setResults(null, null);
-                        recognitionScoreView.postInvalidate();
+                            if (imageName.getEuclidianDistance() < MODEL_EUCLIDIAN_DISTANCE_THRESHOLD) {
+                                results = result.getRecognitions();
+                                image = imageName;
+                            } else {
+                                results = result.getRecognitions();
+                            }
+                        }
+                        final List<Classifier.Recognition> finalResult = results;
+                        final ObjectWithDetection finalImage = image;
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                recognitionScoreView.setResults(finalResult, finalImage);
+                            }
+                        });
                         requestRender();
                         readyForNextImage();
                         lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;

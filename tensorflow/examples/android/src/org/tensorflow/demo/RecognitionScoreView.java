@@ -16,114 +16,85 @@ limitations under the License.
 package org.tensorflow.demo;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.TypedValue;
 import android.view.View;
-import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import org.tensorflow.demo.Classifier.Recognition;
 import org.tensorflow.demo.entities.ObjectWithDetection;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-public class RecognitionScoreView extends View implements ResultsView {
-    private static final float TEXT_SIZE_DIP = 12;
-    private final float textSizePx;
-    private final Paint fgPaint;
-    private final Paint fgPaintHeader;
-    private final Paint headerPaint;
-    private final Paint bgPaint;
-    private List<Recognition> results;
-    private ObjectWithDetection image;
-    private Bitmap bitmap;
+public class RecognitionScoreView extends RelativeLayout {
 
+    private View recognitionScoreView, scoreView;
+    private TextView description;
+    private TextView sellThroughtValue;
+    private TextView imuValue;
+    private TextView marginValue;
+    private TextView buyQuantityValue;
+    private TextView titleConfidence;
+    private TextView distance;
 
-    public RecognitionScoreView(final Context context, final AttributeSet set) {
-        super(context, set);
-
-        textSizePx =
-                TypedValue.applyDimension(
-                        TypedValue.COMPLEX_UNIT_DIP, TEXT_SIZE_DIP, getResources().getDisplayMetrics());
-        fgPaint = new Paint();
-        fgPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.NORMAL));
-        fgPaint.setTextSize(textSizePx);
-        fgPaint.setColor(Color.WHITE);
-
-        fgPaintHeader = new Paint();
-        fgPaintHeader.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
-        fgPaintHeader.setTextSize(textSizePx);
-        fgPaintHeader.setColor(Color.WHITE);
-
-        headerPaint = new Paint();
-        headerPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
-        headerPaint.setTextSize(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics()));
-        headerPaint.setColor(Color.WHITE);
-
-        bgPaint = new Paint();
-        bgPaint.setColor(Color.TRANSPARENT);
+    public RecognitionScoreView(Context context) {
+        super(context);
+        init();
     }
 
-    @Override
+    public RecognitionScoreView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public RecognitionScoreView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    public RecognitionScoreView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
+        super(context, attrs, defStyleAttr, defStyleRes);
+        init();
+    }
+
+    private void init() {
+        recognitionScoreView = inflate(getContext(), R.layout.recognition_score_view, this);
+        scoreView = findViewById(R.id.scoreView);
+        this.description = (TextView) findViewById(R.id.description);
+        this.sellThroughtValue = (TextView) findViewById(R.id.sell_through_value);
+        this.imuValue = (TextView) findViewById(R.id.imu_value);
+        this.marginValue = (TextView) findViewById(R.id.margin_value);
+        this.buyQuantityValue = (TextView) findViewById(R.id.buy_quantity_value);
+        this.distance = (TextView) findViewById(R.id.distance);
+        this.titleConfidence = (TextView) findViewById(R.id.titleConfidence);
+    }
+
     public void setResults(List<Recognition> results, ObjectWithDetection image) {
-        this.results = results;
-        this.image = image;
-    }
 
-    @Override
-    public void onDraw(final Canvas canvas) {
-        final int x = 10;
-        int y = (int) (fgPaint.getTextSize() * 1.5f);
-
-
-        Set customPositionedAttributes = new HashSet();
-        customPositionedAttributes.add("description");
-        customPositionedAttributes.add("id");
         if (image != null) {
-            ImageView view = (ImageView) getRootView().findViewById(R.id.imageView);
-            view.setVisibility(VISIBLE);
-
             String fileName = image.getOws().getFileName();
             String key = fileName.substring(0, fileName.indexOf(".jpg"));
             Map<String, String> data = Constants.objectDataFromRetailMe.get(key);
 
-            canvas.drawText(data.get("description"), 80, 1440, headerPaint);
-
-            canvas.drawText("Sell Through", 80, 1540, fgPaintHeader);
-            canvas.drawText(data.get("Sell Through %"), 80, 1600, fgPaint);
-
-
-            canvas.drawText("Margin", 80, 1670, fgPaintHeader);
-            canvas.drawText(data.get("Margin %"), 80, 1730, fgPaint);
-
-
-            canvas.drawText("Buy Quantity", 580, 1540, fgPaintHeader);
-            canvas.drawText(data.get("Buy Qty"), 580, 1600, fgPaint);
-
-
-            canvas.drawText("IMU", 580, 1670, fgPaintHeader);
-            canvas.drawText(data.get("IMU%"), 580, 1730, fgPaint);
-        } else {
-            ImageView view = (ImageView) getRootView().findViewById(R.id.imageView);
-            view.setVisibility(INVISIBLE);
+            description.setText(data.get("description"));
+            sellThroughtValue.setText(data.get("Sell Through %"));
+            marginValue.setText(data.get("Margin %"));
+            buyQuantityValue.setText(data.get("Buy Qty"));
+            imuValue.setText(data.get("IMU%"));
+            scoreView.setVisibility(VISIBLE);
+        }else{
+            scoreView.setVisibility(GONE);
         }
-
-        y = 900;
 
         if (results != null) {
             for (final Recognition recog : results) {
-                canvas.drawText(recog.getTitle().toUpperCase() + ": " + (int) (recog.getConfidence() * 100) + "%", x, y + 100, fgPaint);
-                y += fgPaint.getTextSize() * 1.5f;
+                titleConfidence.setText(recog.getTitle().toUpperCase() + ": " + (int) (recog.getConfidence() * 100));
             }
             if (image != null)
-                canvas.drawText("Distance: " + image.getEuclidianDistance(), x, y + 100, fgPaint);
+                distance.setText("Distance: " + image.getEuclidianDistance());
         }
     }
+
+
 }
